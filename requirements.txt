@@ -1,4 +1,5 @@
 streamlit[auth]
+Authlib>=1.3.2
 requests
 Pillow
 openpyxl
