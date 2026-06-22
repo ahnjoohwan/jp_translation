@@ -25,6 +25,41 @@ st.set_page_config(page_title="상세페이지 번역 도구", page_icon="🌐",
 st.title("🌐 상세페이지 번역 도구")
 st.caption("이미지 업로드 → 한국어 추출(CLOVA OCR) → 번역(DeepL) → 번역표 엑셀 다운로드")
 
+# ── 로그인 / 도메인 제한 ─────────────────────
+# 회사 구글 계정(@boosters.kr)만 사용 가능. Google OAuth([auth] secrets)가
+# 설정돼 있을 때만 강제하며, 미설정 시에는 경고만 띄우고 동작(설정 전 임시).
+ALLOWED_DOMAIN = "@boosters.kr"
+
+
+def _auth_configured() -> bool:
+    try:
+        return "auth" in st.secrets
+    except Exception:
+        return False
+
+
+if _auth_configured():
+    if not st.user.is_logged_in:
+        st.info("이 도구는 회사 구글 계정으로 로그인해야 사용할 수 있습니다.")
+        st.button("🔐 Google로 로그인", on_click=st.login, type="primary")
+        st.stop()
+
+    email = (getattr(st.user, "email", "") or "").lower()
+    verified = getattr(st.user, "email_verified", True)
+    if not (email.endswith(ALLOWED_DOMAIN) and verified):
+        st.error(
+            f"`{email or '알 수 없음'}` 계정은 사용 권한이 없습니다.\n\n"
+            f"**{ALLOWED_DOMAIN}** 로 끝나는 회사 구글 계정으로 로그인하세요."
+        )
+        st.button("다른 계정으로 로그인", on_click=st.logout)
+        st.stop()
+
+    with st.sidebar:
+        st.write(f"👤 {email}")
+        st.button("로그아웃", on_click=st.logout)
+else:
+    st.warning("⚠️ 로그인 보호가 아직 설정되지 않았습니다. (관리자가 Google OAuth 설정 후 활성화됩니다)")
+
 # ── API 키 확인 ──────────────────────────────
 if not (config.CLOVA_SECRET_KEY and config.CLOVA_API_URL and config.DEEPL_API_KEY):
     st.error(
