@@ -23,7 +23,7 @@ from translate import LANG_NAMES, filename_sort_key, run_pipeline
 ALLOWED_DOMAIN = "@boosters.kr"
 CONTACT_EMAIL = "joohwan.ahn@boosters.kr"  # 배포·문의 담당
 
-st.set_page_config(page_title="상세페이지 번역", page_icon="🍎", layout="centered")
+st.set_page_config(page_title="상세페이지 번역기", page_icon="🍎", layout="centered")
 
 
 # ──────────────────────────────────────────────
@@ -143,7 +143,7 @@ st.markdown(
     """
     <div class="hero">
         <div class="hero-badge">DETAIL PAGE TRANSLATOR</div>
-        <h1 class="hero-title">상세페이지 번역</h1>
+        <h1 class="hero-title">상세페이지 번역기</h1>
         <p class="hero-sub">이미지 업로드 → 한국어 추출 → 번역 → 번역표 엑셀 다운로드</p>
     </div>
     """,
