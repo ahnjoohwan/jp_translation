@@ -1,4 +1,5 @@
 streamlit
+Authlib
 requests
 Pillow
 openpyxl
