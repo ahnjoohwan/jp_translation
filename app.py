@@ -91,15 +91,25 @@ def inject_theme():
 
         /* 버튼 — Apple 필 스타일 */
         .stButton > button, .stDownloadButton > button {{
-            border-radius: 980px !important; font-weight: 500 !important;
-            padding: 0.55rem 1.4rem !important; border: 1px solid transparent !important;
-            transition: all .18s ease !important; box-shadow: none !important;
+            border-radius: 980px !important; font-weight: 600 !important;
+            padding: 0.64rem 1.9rem !important; border: 1px solid transparent !important;
+            transition: all .18s ease !important; font-size: 16px !important;
+            min-width: 180px;
         }}
         .stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
-            background: var(--apple-blue) !important; color: #fff !important;
+            background: #0a84ff !important; color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(10,132,255,0.35) !important;
+        }}
+        /* 라벨이 내부 p/span 으로 들어가 색이 안 먹는 문제 → 흰색 강제 */
+        .stButton > button[kind="primary"] *, .stDownloadButton > button[kind="primary"] * {{
+            color: #ffffff !important; fill: #ffffff !important;
         }}
         .stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {{
-            background: var(--apple-blue-hover) !important; transform: translateY(-1px);
+            background: #0070e0 !important; transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(10,132,255,0.45) !important;
+        }}
+        .stButton > button[kind="primary"]:disabled {{
+            background: #c7c7cc !important; box-shadow: none !important;
         }}
         .stButton > button[kind="secondary"] {{
             background: #f5f5f7 !important; color: var(--ink) !important;
