@@ -1,0 +1,11 @@
+# 비밀값 — 절대 커밋 금지
+.streamlit/secrets.toml
+
+# 입출력 데이터 (제품 이미지/결과물은 저장소에 올리지 않음)
+input/
+output/
+
+# 캐시/시스템 파일
+__pycache__/
+*.pyc
+.DS_Store
