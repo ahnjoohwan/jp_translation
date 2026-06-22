@@ -20,17 +20,132 @@ import config
 import translate
 from translate import LANG_NAMES, filename_sort_key, run_pipeline
 
-st.set_page_config(page_title="상세페이지 번역 도구", page_icon="🌐", layout="centered")
+ALLOWED_DOMAIN = "@boosters.kr"
+CONTACT_EMAIL = "joohwan.ahn@boosters.kr"  # 배포·문의 담당
 
-st.title("🌐 상세페이지 번역 도구")
-st.caption("이미지 업로드 → 한국어 추출(CLOVA OCR) → 번역(DeepL) → 번역표 엑셀 다운로드")
+st.set_page_config(page_title="상세페이지 번역", page_icon="🍎", layout="centered")
 
-# ── 로그인 / 도메인 제한 ─────────────────────
+
+# ──────────────────────────────────────────────
+# Apple 스타일 테마 + 워터마크
+# ──────────────────────────────────────────────
+def inject_theme():
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {{
+            --apple-blue: #0071e3;
+            --apple-blue-hover: #0077ed;
+            --ink: #1d1d1f;
+            --ink-soft: #6e6e73;
+            --hair: #d2d2d7;
+            --surface: #ffffff;
+            --bg: #fbfbfd;
+        }}
+
+        html, body, [class*="css"], .stApp,
+        input, textarea, button, select {{
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+        }}
+
+        .stApp {{ background: var(--bg); }}
+        [data-testid="stHeader"] {{ background: transparent; }}
+        #MainMenu, footer {{ visibility: hidden; }}
+        .block-container {{ max-width: 720px; padding-top: 2.4rem; padding-bottom: 5rem; }}
+
+        /* Hero */
+        .hero {{ text-align: center; margin: 0.5rem 0 2.2rem; }}
+        .hero-badge {{
+            display: inline-block; font-size: 13px; font-weight: 600;
+            color: var(--apple-blue); letter-spacing: .02em; margin-bottom: 10px;
+        }}
+        .hero-title {{
+            font-size: 44px; font-weight: 700; color: var(--ink);
+            letter-spacing: -0.022em; line-height: 1.08; margin: 0;
+        }}
+        .hero-sub {{
+            font-size: 17px; color: var(--ink-soft); margin-top: 12px;
+            letter-spacing: -0.01em;
+        }}
+
+        /* 섹션 헤더 */
+        h2, h3 {{ color: var(--ink) !important; font-weight: 600 !important;
+            letter-spacing: -0.015em !important; }}
+        [data-testid="stMarkdownContainer"] p {{ color: var(--ink-soft); }}
+
+        /* 카드형 입력 영역 */
+        [data-testid="stFileUploaderDropzone"] {{
+            border: 1px dashed var(--hair) !important; border-radius: 16px !important;
+            background: var(--surface) !important; padding: 1.4rem !important;
+        }}
+        .stTextInput input, .stMultiSelect [data-baseweb="select"] > div {{
+            border-radius: 12px !important; border-color: var(--hair) !important;
+            background: var(--surface) !important;
+        }}
+        [data-baseweb="tag"] {{ border-radius: 8px !important; background: #f0f0f3 !important;
+            color: var(--ink) !important; }}
+
+        /* 버튼 — Apple 필 스타일 */
+        .stButton > button, .stDownloadButton > button {{
+            border-radius: 980px !important; font-weight: 500 !important;
+            padding: 0.55rem 1.4rem !important; border: 1px solid transparent !important;
+            transition: all .18s ease !important; box-shadow: none !important;
+        }}
+        .stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {{
+            background: var(--apple-blue) !important; color: #fff !important;
+        }}
+        .stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {{
+            background: var(--apple-blue-hover) !important; transform: translateY(-1px);
+        }}
+        .stButton > button[kind="secondary"] {{
+            background: #f5f5f7 !important; color: var(--ink) !important;
+            border-color: var(--hair) !important;
+        }}
+
+        hr {{ border-color: var(--hair); }}
+
+        /* 워터마크 — 하단에 아주 연하게 */
+        .app-watermark {{
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+            text-align: center; padding: 9px 12px;
+            font-size: 11.5px; letter-spacing: .01em; color: rgba(60,60,67,0.30);
+            background: linear-gradient(to top, rgba(251,251,253,0.92), rgba(251,251,253,0));
+            pointer-events: none; user-select: none;
+        }}
+        .app-watermark b {{ font-weight: 600; color: rgba(60,60,67,0.40); }}
+        </style>
+
+        <div class="app-watermark">
+            배포 · 문의 <b>{CONTACT_EMAIL}</b> &nbsp;·&nbsp; 사용 중 문의사항이나 개선 요청은 위 담당자에게 연락해 주세요
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+inject_theme()
+
+st.markdown(
+    """
+    <div class="hero">
+        <div class="hero-badge">DETAIL PAGE TRANSLATOR</div>
+        <h1 class="hero-title">상세페이지 번역</h1>
+        <p class="hero-sub">이미지 업로드 → 한국어 추출 → 번역 → 번역표 엑셀 다운로드</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# ──────────────────────────────────────────────
+# 로그인 / 도메인 제한
 # 회사 구글 계정(@boosters.kr)만 사용 가능. Google OAuth([auth] secrets)가
 # 설정돼 있을 때만 강제하며, 미설정 시에는 경고만 띄우고 동작(설정 전 임시).
-ALLOWED_DOMAIN = "@boosters.kr"
-
-
+# ──────────────────────────────────────────────
 def _auth_configured() -> bool:
     try:
         return "auth" in st.secrets
@@ -69,7 +184,7 @@ if not (config.CLOVA_SECRET_KEY and config.CLOVA_API_URL and config.DEEPL_API_KE
     )
     st.stop()
 
-# ── 입력 폼 ──────────────────────────────────
+# ── 1. 이미지 업로드 ─────────────────────────
 st.subheader("1. 이미지 업로드")
 st.write("제품 **한 개**의 상세페이지 이미지들을 한 번에 올려주세요. (파일명 숫자 순서로 위→아래 정렬됩니다)")
 
@@ -86,6 +201,7 @@ if uploaded:
     cleaned = "".join(ch for ch in stem if not ch.isdigit()).strip("_-· ")
     default_name = cleaned or "제품"
 
+# ── 2. 옵션 ──────────────────────────────────
 st.subheader("2. 옵션")
 product_name = st.text_input("제품명 (다운로드 파일 이름에 사용)", value=default_name)
 
@@ -97,7 +213,7 @@ selected_langs = st.multiselect(
     format_func=lambda code: f"{LANG_NAMES[code]} ({code})",
 )
 
-# ── 실행 ─────────────────────────────────────
+# ── 3. 번역 실행 ─────────────────────────────
 st.subheader("3. 번역 실행")
 run = st.button("번역 시작", type="primary", disabled=not (uploaded and selected_langs))
 
